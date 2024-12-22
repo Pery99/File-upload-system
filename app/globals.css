@@ -1,21 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary: #2563eb;
+  --bg: #ffffff;
+  --fg: #111827;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.dark {
+  --primary: #60a5fa;
+  --bg: #111827;
+  --fg: #f3f4f6;
+}
+
+@layer base {
+  body {
+    @apply bg-[--bg] text-[--fg] font-inter;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .container-custom {
+    @apply max-w-3xl mx-auto px-4 py-16 sm:px-6 lg:px-8;
+  }
+
+  .upload-zone {
+    @apply relative border-2 border-dashed border-gray-300 dark:border-gray-700 
+           rounded-2xl p-12 text-center transition-all
+           hover:border-blue-500 dark:hover:border-blue-400
+           bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm;
+  }
+
+  .upload-zone-active {
+    @apply border-blue-500 dark:border-blue-400 
+           bg-blue-50/50 dark:bg-blue-500/10;
+  }
+
+  .btn {
+    @apply px-4 py-2 rounded-xl font-medium transition-all
+           text-sm flex items-center gap-2;
+  }
+
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white
+           dark:bg-blue-500 dark:hover:bg-blue-600;
+  }
+
+  .file-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8;
+  }
+
+  .file-item {
+    @apply relative p-4 rounded-xl bg-white dark:bg-gray-900
+           border border-gray-200 dark:border-gray-800
+           hover:shadow-lg hover:scale-[1.02] transition-all;
+  }
+
+  .progress-bar {
+    @apply fixed top-4 right-4 z-50 p-4 rounded-xl
+           bg-white dark:bg-gray-900 shadow-lg
+           border border-gray-200 dark:border-gray-800;
+  }
 }
