@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useState, useRef, useMemo } from 'react';
+import { useCallback, useState, useRef, useMemo, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -13,6 +13,15 @@ import { pdfjs } from 'react-pdf';
 // Update PDF worker configuration
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js`;
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_FILE_TYPES = {
+  'image/png': ['.png'],
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/gif': ['.gif'],
+  'image/webp': ['.webp'],
+  'application/pdf': ['.pdf'],
+};
+
 const FileUpload = () => {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -24,8 +33,44 @@ const FileUpload = () => {
   const [fileView, setFileView] = useState('grid');
   const [fileType, setFileType] = useState('all');
   const [numPages, setNumPages] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const onDrop = useCallback(async (acceptedFiles) => {
+  useEffect(() => {
+    // Check if Cloudinary config is valid
+    const checkConfig = async () => {
+      try {
+        if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 
+            !process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET) {
+          throw new Error('Missing Cloudinary configuration');
+        }
+        setLoading(false);
+      } catch (error) {
+        setError('Configuration error. Please try again later.');
+        console.error('Config Error:', error);
+      }
+    };
+    checkConfig();
+  }, []);
+
+  const onDrop = useCallback(async (acceptedFiles, rejectedFiles) => {
+    if (rejectedFiles?.length) {
+      const errorMessage = rejectedFiles.map(rejection => {
+        const errors = rejection.errors.map(error => {
+          if (error.code === 'file-invalid-type') {
+            return `${rejection.file.name} is not a supported file type`;
+          }
+          if (error.code === 'file-too-large') {
+            return `${rejection.file.name} is too large (max ${MAX_FILE_SIZE / (1024 * 1024)}MB)`;
+          }
+          return error.message;
+        });
+        return errors.join(', ');
+      }).join('; ');
+      
+      setError(errorMessage);
+      return;
+    }
+
     setUploading(true);
     setProgress(0);
     setError(null);
@@ -71,7 +116,7 @@ const FileUpload = () => {
       setFiles(prev => [...prev, ...uploadedFiles]);
     } catch (error) {
       console.error('Upload failed:', error);
-      setError(error.message);
+      setError('Failed to upload files. Please try again.');
     } finally {
       setUploading(false);
       setProgress(0);
@@ -80,10 +125,9 @@ const FileUpload = () => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
-      'application/pdf': ['.pdf'],
-    }
+    accept: ALLOWED_FILE_TYPES,
+    maxSize: MAX_FILE_SIZE,
+    multiple: true,
   });
 
   const groupedFiles = useMemo(() => {
@@ -179,6 +223,30 @@ const FileUpload = () => {
   };
 
   const displayedFiles = groupedFiles[fileType] || groupedFiles.all;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (error && !files.length) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error}</p>
+          <button
+            onClick={() => setError(null)}
+            className="btn btn-primary"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container-custom">
