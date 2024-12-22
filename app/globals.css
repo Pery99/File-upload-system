@@ -28,12 +28,12 @@
 
 @layer components {
   .container-custom {
-    @apply max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8;
+    @apply max-w-[95%] sm:max-w-4xl mx-auto px-2 sm:px-4 py-6 sm:py-12;
   }
 
   .hero-title {
-    @apply text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent 
-           bg-clip-text text-transparent animate-gradient-x;
+    @apply text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary 
+           via-secondary to-accent bg-clip-text text-transparent animate-gradient-x;
   }
 
   .card {
@@ -44,8 +44,8 @@
   }
 
   .upload-zone {
-    @apply relative border-2 border-dashed rounded-3xl p-12
-           text-center transition-all
+    @apply relative border-2 border-dashed rounded-xl sm:rounded-3xl 
+           p-4 sm:p-8 md:p-12 text-center transition-all
            hover:border-primary dark:hover:border-primary
            bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm;
   }
@@ -59,7 +59,8 @@
   }
 
   .btn {
-    @apply px-5 py-2.5 rounded-xl font-medium transition-all duration-300
+    @apply px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-sm sm:text-base
+           font-medium transition-all duration-300
            flex items-center gap-2 disabled:opacity-50;
   }
 
@@ -74,8 +75,19 @@
            hover:bg-gray-50 dark:hover:bg-gray-700/50;
   }
 
+  .btn-active {
+    @apply bg-primary text-white shadow-lg shadow-primary/25
+           hover:bg-primary-dark hover:-translate-y-0.5
+           active:translate-y-0;
+  }
+
   .file-grid {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12;
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mt-6 sm:mt-12;
+  }
+
+  .file-type-buttons {
+    @apply flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mb-4 sm:mb-8 
+           px-2 sm:px-0 overflow-x-auto;
   }
 
   .file-item {
@@ -87,17 +99,22 @@
   }
 
   .file-preview {
-    @apply aspect-video rounded-xl overflow-hidden mb-3
+    @apply aspect-video sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden mb-3
            bg-gray-100 dark:bg-gray-800/50 relative;
   }
 
+  .file-preview-pdf {
+    @apply w-full h-full flex items-center justify-center bg-gray-50 
+           dark:bg-gray-800/50 rounded-lg p-4 relative overflow-hidden;
+  }
+
   .file-actions {
-    @apply absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0
+    @apply absolute inset-0 bg-black/50 backdrop-blur-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100
            flex items-center justify-center gap-3 transition-opacity duration-300;
   }
 
   .icon-btn {
-    @apply p-2 rounded-full bg-white/20 hover:bg-white/30
+    @apply p-1.5 sm:p-2 rounded-full bg-white/20 hover:bg-white/30
            text-white transition-all duration-200
            hover:scale-110 backdrop-blur-sm;
   }
@@ -108,7 +125,43 @@
   }
 
   .progress-card {
-    @apply card p-6 w-full max-w-md mx-4 animate-slide-up;
+    @apply card p-4 sm:p-6 w-[90%] sm:w-full max-w-md mx-2 sm:mx-4 animate-slide-up;
+  }
+
+  .react-pdf__Document {
+    @apply w-full max-h-[80vh] overflow-auto;
+  }
+
+  .react-pdf__Page {
+    @apply bg-white rounded-lg shadow-xl mx-auto;
+  }
+
+  .react-pdf__Page__canvas {
+    @apply mx-auto;
+  }
+
+  .pdf-controls {
+    @apply flex items-center justify-center gap-4 mt-4;
+  }
+
+  .pdf-page-info {
+    @apply text-sm text-gray-600 dark:text-gray-400;
+  }
+
+  .react-pdf__Document {
+    @apply flex flex-col items-center;
+  }
+
+  .react-pdf__Page {
+    @apply shadow-xl;
+  }
+
+  .react-pdf__Page__canvas {
+    @apply rounded-lg;
+  }
+
+  .modal-content {
+    @apply w-[95%] sm:w-[90%] max-w-4xl mx-auto p-3 sm:p-6;
   }
 }
 

@@ -59,7 +59,8 @@ module.exports = {
     },
   },
   plugins: [
-    require('@tailwindcss/typography'),
+    // Remove typography plugin if installation fails
+    // require('@tailwindcss/typography'),
     function({ addUtilities, theme }) {
       const utilities = {
         '.bg-primary-opacity': {

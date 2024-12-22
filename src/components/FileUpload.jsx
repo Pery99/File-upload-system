@@ -1,12 +1,17 @@
 'use client';
-import { useCallback, useState, useRef } from 'react';
+import { useCallback, useState, useRef, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiUploadCloud, FiFile, FiX, FiDownload, FiMoon, FiSun,
-  FiMaximize2, FiTrash2, FiCheck, FiImage
+  FiMaximize2, FiTrash2, FiImage, FiFileText, FiGrid, FiList
 } from 'react-icons/fi';
 import { useTheme } from 'next-themes';
+import { Document, Page } from 'react-pdf';
+import { pdfjs } from 'react-pdf';
+
+// Update PDF worker configuration
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js`;
 
 const FileUpload = () => {
   const [files, setFiles] = useState([]);
@@ -16,6 +21,9 @@ const FileUpload = () => {
   const [preview, setPreview] = useState(null);
   const draggedFile = useRef(null);
   const [error, setError] = useState(null);
+  const [fileView, setFileView] = useState('grid');
+  const [fileType, setFileType] = useState('all');
+  const [numPages, setNumPages] = useState(null);
 
   const onDrop = useCallback(async (acceptedFiles) => {
     setUploading(true);
@@ -78,14 +86,108 @@ const FileUpload = () => {
     }
   });
 
+  const groupedFiles = useMemo(() => {
+    return {
+      images: files.filter(f => f.resource_type === 'image'),
+      documents: files.filter(f => f.resource_type === 'raw' || f.format === 'pdf'),
+      all: files
+    };
+  }, [files]);
+
+  const renderFileTypeButtons = () => (
+    <div className="file-type-buttons">
+      <button 
+        onClick={() => setFileType('all')}
+        className={`btn ${fileType === 'all' ? 'btn-active' : 'btn-secondary'}`}
+      >
+        <FiGrid className="w-4 h-4 sm:w-5 sm:h-5" /> 
+        <span className="hidden sm:inline">All</span> ({groupedFiles.all.length})
+      </button>
+      <button 
+        onClick={() => setFileType('images')}
+        className={`btn ${fileType === 'images' ? 'btn-primary' : 'btn-secondary'}`}
+      >
+        <FiImage className="w-4 h-4 sm:w-5 sm:h-5" /> 
+        <span className="hidden sm:inline">Images</span> ({groupedFiles.images.length})
+      </button>
+      <button 
+        onClick={() => setFileType('documents')}
+        className={`btn ${fileType === 'documents' ? 'btn-primary' : 'btn-secondary'}`}
+      >
+        <FiFileText className="w-4 h-4 sm:w-5 sm:h-5" /> 
+        <span className="hidden sm:inline">Documents</span> ({groupedFiles.documents.length})
+      </button>
+    </div>
+  );
+
+  const renderPreview = (file) => {
+    if (file.format === 'pdf') {
+      return (
+        <div className="file-preview-pdf">
+          <Document
+            file={file.secure_url}
+            onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+            loading={
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
+              </div>
+            }
+          >
+            <Page 
+              pageNumber={1} 
+              width={Math.min(800, window.innerWidth - (window.innerWidth < 640 ? 32 : 64))}
+              scale={window.innerWidth < 640 ? 0.8 : 1}
+              className="mx-auto"
+              loading={
+                <div className="animate-pulse bg-gray-200 dark:bg-gray-700 rounded-lg" 
+                     style={{ width: '100%', height: '400px' }}
+                />
+              }
+            />
+            <div className="pdf-controls">
+              <p className="pdf-page-info">
+                Page 1 of {numPages || '?'}
+              </p>
+            </div>
+          </Document>
+        </div>
+      );
+    }
+    
+    if (file.resource_type === 'image') {
+      return (
+        <img
+          src={file.secure_url}
+          alt={file.original_filename}
+          className="w-full rounded-lg"
+        />
+      );
+    }
+
+    return (
+      <div className="flex flex-col items-center justify-center p-8">
+        <FiFileText className="w-16 h-16 text-gray-400 mb-4" />
+        <a 
+          href={file.secure_url}
+          download
+          className="btn btn-primary"
+        >
+          Download File
+        </a>
+      </div>
+    );
+  };
+
+  const displayedFiles = groupedFiles[fileType] || groupedFiles.all;
+
   return (
     <div className="container-custom">
       <button 
         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        className="fixed top-4 right-4 btn btn-secondary"
+        className="fixed top-2 sm:top-4 right-2 sm:right-4 btn btn-secondary"
         aria-label="Toggle theme"
       >
-        {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
+        {theme === 'dark' ? <FiSun className="w-4 h-4 sm:w-5 sm:h-5" /> : <FiMoon className="w-4 h-4 sm:w-5 sm:h-5" />}
       </button>
 
       <div className="text-center mb-12">
@@ -94,6 +196,8 @@ const FileUpload = () => {
           Drag & drop your files to upload
         </p>
       </div>
+
+      {renderFileTypeButtons()}
 
       {error && (
         <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 
@@ -119,14 +223,14 @@ const FileUpload = () => {
       </div>
 
       <AnimatePresence>
-        {files.length > 0 && (
+        {displayedFiles.length > 0 && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             className="file-grid"
           >
-            {files.map((file) => (
+            {displayedFiles.map((file) => (
               <motion.div
                 key={file.public_id}
                 layout
@@ -230,19 +334,7 @@ const FileUpload = () => {
               className="progress-card max-w-4xl"
               onClick={e => e.stopPropagation()}
             >
-              {preview.resource_type === 'image' ? (
-                <img
-                  src={preview.secure_url}
-                  alt={preview.original_filename}
-                  className="w-full rounded-lg"
-                />
-              ) : (
-                <iframe
-                  src={preview.secure_url}
-                  className="w-full h-[80vh] rounded-lg"
-                  title={preview.original_filename}
-                />
-              )}
+              {renderPreview(preview)}
             </div>
           </div>
         )}
