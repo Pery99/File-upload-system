@@ -6,12 +6,16 @@
 
 :root {
   --primary: #2563eb;
+  --secondary: #ec4899;
+  --accent: #8b5cf6;
   --bg: #ffffff;
   --fg: #111827;
 }
 
 .dark {
   --primary: #60a5fa;
+  --secondary: #f472b6;
+  --accent: #a78bfa;
   --bg: #111827;
   --fg: #f3f4f6;
 }
@@ -24,44 +28,98 @@
 
 @layer components {
   .container-custom {
-    @apply max-w-3xl mx-auto px-4 py-16 sm:px-6 lg:px-8;
+    @apply max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8;
+  }
+
+  .hero-title {
+    @apply text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent 
+           bg-clip-text text-transparent animate-gradient-x;
+  }
+
+  .card {
+    @apply bg-white/70 dark:bg-gray-800/70 backdrop-blur-md
+           border border-gray-200/50 dark:border-gray-700/50
+           shadow-xl hover:shadow-2xl transition-all duration-300
+           rounded-2xl overflow-hidden;
   }
 
   .upload-zone {
-    @apply relative border-2 border-dashed border-gray-300 dark:border-gray-700 
-           rounded-2xl p-12 text-center transition-all
-           hover:border-blue-500 dark:hover:border-blue-400
-           bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm;
+    @apply relative border-2 border-dashed rounded-3xl p-12
+           text-center transition-all
+           hover:border-primary dark:hover:border-primary
+           bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm;
   }
 
-  .upload-zone-active {
-    @apply border-blue-500 dark:border-blue-400 
-           bg-blue-50/50 dark:bg-blue-500/10;
+  .upload-zone-content {
+    @apply transform transition-all duration-300;
+  }
+
+  .upload-zone:hover .upload-zone-content {
+    @apply scale-105 -translate-y-1;
   }
 
   .btn {
-    @apply px-4 py-2 rounded-xl font-medium transition-all
-           text-sm flex items-center gap-2;
+    @apply px-5 py-2.5 rounded-xl font-medium transition-all duration-300
+           flex items-center gap-2 disabled:opacity-50;
   }
 
   .btn-primary {
-    @apply bg-blue-600 hover:bg-blue-700 text-white
-           dark:bg-blue-500 dark:hover:bg-blue-600;
+    @apply bg-gradient-to-r from-primary to-accent text-white
+           hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5
+           active:translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700
+           hover:bg-gray-50 dark:hover:bg-gray-700/50;
   }
 
   .file-grid {
-    @apply grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8;
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12;
   }
 
   .file-item {
-    @apply relative p-4 rounded-xl bg-white dark:bg-gray-900
-           border border-gray-200 dark:border-gray-800
-           hover:shadow-lg hover:scale-[1.02] transition-all;
+    @apply card p-4;
   }
 
-  .progress-bar {
-    @apply fixed top-4 right-4 z-50 p-4 rounded-xl
-           bg-white dark:bg-gray-900 shadow-lg
-           border border-gray-200 dark:border-gray-800;
+  .file-item:hover .file-actions {
+    @apply opacity-100;
+  }
+
+  .file-preview {
+    @apply aspect-video rounded-xl overflow-hidden mb-3
+           bg-gray-100 dark:bg-gray-800/50 relative;
+  }
+
+  .file-actions {
+    @apply absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0
+           flex items-center justify-center gap-3 transition-opacity duration-300;
+  }
+
+  .icon-btn {
+    @apply p-2 rounded-full bg-white/20 hover:bg-white/30
+           text-white transition-all duration-200
+           hover:scale-110 backdrop-blur-sm;
+  }
+
+  .progress-overlay {
+    @apply fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm
+           flex items-start justify-center pt-20 z-50;
+  }
+
+  .progress-card {
+    @apply card p-6 w-full max-w-md mx-4 animate-slide-up;
+  }
+}
+
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@layer utilities {
+  .animate-gradient-x {
+    animation: gradient-x 15s linear infinite;
+    background-size: 200% 200%;
   }
 }
